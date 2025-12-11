@@ -1,0 +1,23 @@
+name: 'Greet User'
+description: 'A custom JavaScript action that greets users'
+author: 'Demo Author'
+
+inputs:
+  who-to-greet:
+    description: 'Who to greet'
+    required: true
+    default: 'World'
+  greeting-style:
+    description: 'Style of greeting: formal, casual, enthusiastic'
+    required: false
+    default: 'casual'
+
+outputs:
+  greeting:
+    description: 'The greeting message'
+  time:
+    description: 'The time the greeting was generated'
+
+runs:
+  using: 'node20'
+  main: 'index.js'

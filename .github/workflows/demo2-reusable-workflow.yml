@@ -1,0 +1,93 @@
+name: Reusable Workflow - Build and Test
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      node-version:
+        required: false
+        type: string
+        default: '18'
+      run-tests:
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      build-status:
+        description: "Status of the build"
+        value: ${{ jobs.build.outputs.status }}
+      test-results:
+        description: "Test results summary"
+        value: ${{ jobs.test.outputs.results }}
+    secrets:
+      deploy-token:
+        required: false
+
+jobs:
+  build:
+    name: Build for ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      status: ${{ steps.build-step.outputs.status }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      
+      - name: Build application
+        id: build-step
+        working-directory: demos/demo2-reusable-workflows
+        run: |
+          echo "Building for ${{ inputs.environment }}..."
+          npm install
+          npm run build
+          echo "status=success" >> $GITHUB_OUTPUT
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ inputs.environment }}
+          path: demos/demo2-reusable-workflows/dist/
+          retention-days: 5
+
+  test:
+    name: Test for ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: build
+    if: ${{ inputs.run-tests }}
+    outputs:
+      results: ${{ steps.test-step.outputs.results }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-${{ inputs.environment }}
+          path: demos/demo2-reusable-workflows/dist/
+      
+      - name: Run tests
+        id: test-step
+        working-directory: demos/demo2-reusable-workflows
+        run: |
+          npm install
+          npm test
+          echo "results=all-passed" >> $GITHUB_OUTPUT

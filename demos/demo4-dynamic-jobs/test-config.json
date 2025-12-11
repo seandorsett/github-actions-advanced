@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Unit Tests - Node 18",
+      "os": "ubuntu-latest",
+      "runtime": "node",
+      "version": "18"
+    },
+    {
+      "name": "Unit Tests - Node 20",
+      "os": "ubuntu-latest",
+      "runtime": "node",
+      "version": "20"
+    },
+    {
+      "name": "Integration Tests - Python 3.9",
+      "os": "ubuntu-latest",
+      "runtime": "python",
+      "version": "3.9"
+    },
+    {
+      "name": "Integration Tests - Python 3.11",
+      "os": "ubuntu-latest",
+      "runtime": "python",
+      "version": "3.11"
+    },
+    {
+      "name": "E2E Tests - Node 20",
+      "os": "ubuntu-latest",
+      "runtime": "node",
+      "version": "20"
+    }
+  ]
+}

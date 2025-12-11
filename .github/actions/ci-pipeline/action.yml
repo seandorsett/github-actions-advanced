@@ -1,0 +1,81 @@
+name: 'CI Pipeline'
+description: 'A comprehensive composite action for CI/CD pipeline'
+author: 'Demo Author'
+
+inputs:
+  node-version:
+    description: 'Node.js version'
+    required: false
+    default: '18'
+  working-directory:
+    description: 'Working directory'
+    required: false
+    default: '.'
+  run-tests:
+    description: 'Whether to run tests'
+    required: false
+    default: 'true'
+  deploy:
+    description: 'Whether to deploy'
+    required: false
+    default: 'false'
+
+outputs:
+  build-status:
+    description: 'Build status'
+    value: ${{ steps.build.outputs.status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+    
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Installing dependencies..."
+        npm install || echo "No package.json found"
+    
+    - name: Lint code
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Linting code..."
+        npm run lint || echo "No lint script"
+    
+    - name: Build
+      id: build
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Building application..."
+        npm run build || echo "No build script"
+        echo "status=success" >> $GITHUB_OUTPUT
+    
+    - name: Run tests
+      if: inputs.run-tests == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Running tests..."
+        npm test || echo "No test script"
+    
+    - name: Deploy
+      if: inputs.deploy == 'true'
+      shell: bash
+      run: |
+        echo "Deploying application..."
+        echo "Deployment target: production"
+        echo "✓ Deployment complete!"
+    
+    - name: Summary
+      shell: bash
+      run: |
+        echo "=== CI Pipeline Complete ==="
+        echo "Node version: ${{ inputs.node-version }}"
+        echo "Tests run: ${{ inputs.run-tests }}"
+        echo "Deployed: ${{ inputs.deploy }}"

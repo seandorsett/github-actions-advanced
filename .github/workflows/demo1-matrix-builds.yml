@@ -1,0 +1,90 @@
+name: Demo 1 - Matrix Builds & Parallel Execution
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'demos/demo1-matrix-builds/**'
+      - '.github/workflows/demo1-matrix-builds.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  # Simple matrix example
+  test-matrix:
+    name: Test on ${{ matrix.os }} with Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [16, 18, 20]
+      # Continue other jobs even if one fails
+      fail-fast: false
+      # Run up to 6 jobs in parallel
+      max-parallel: 6
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      
+      - name: Display environment info
+        run: |
+          echo "OS: ${{ matrix.os }}"
+          echo "Node version: ${{ matrix.node }}"
+          node --version
+          npm --version
+      
+      - name: Install dependencies
+        working-directory: demos/demo1-matrix-builds
+        run: npm install
+      
+      - name: Run tests
+        working-directory: demos/demo1-matrix-builds
+        run: npm test
+
+  # Advanced matrix with include/exclude
+  advanced-matrix:
+    name: Advanced - ${{ matrix.browser }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        browser: [chrome, firefox]
+        # Add specific combinations
+        include:
+          - os: macos-latest
+            browser: safari
+            experimental: true
+        # Exclude specific combinations
+        exclude:
+          - os: windows-latest
+            browser: firefox
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run browser tests
+        run: |
+          echo "Testing ${{ matrix.browser }} on ${{ matrix.os }}"
+          echo "Experimental: ${{ matrix.experimental }}"
+
+  # Dependent job that runs after matrix completes
+  report-results:
+    name: Report Test Results
+    needs: [test-matrix, advanced-matrix]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Check test results
+        run: |
+          echo "All matrix jobs completed!"
+          echo "test-matrix result: ${{ needs.test-matrix.result }}"
+          echo "advanced-matrix result: ${{ needs.advanced-matrix.result }}"
