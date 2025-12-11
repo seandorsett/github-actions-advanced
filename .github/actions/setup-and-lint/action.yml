@@ -1,0 +1,51 @@
+name: 'Setup and Lint'
+description: 'Composite action to setup Node.js and run linting'
+author: 'GitHub Actions Demo'
+
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '18'
+  working-directory:
+    description: 'Working directory for commands'
+    required: false
+    default: '.'
+
+outputs:
+  lint-status:
+    description: 'Status of the linting process'
+    value: ${{ steps.lint.outputs.status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        cache-dependency-path: ${{ inputs.working-directory }}/package.json
+    
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Installing dependencies in ${{ inputs.working-directory }}..."
+        npm ci || npm install
+    
+    - name: Run linter
+      id: lint
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Running linter..."
+        npm run lint || echo "No lint script found, skipping..."
+        echo "status=success" >> $GITHUB_OUTPUT
+    
+    - name: Display info
+      shell: bash
+      run: |
+        echo "✓ Node.js setup and linting completed"
+        echo "  Node version: ${{ inputs.node-version }}"
+        echo "  Working directory: ${{ inputs.working-directory }}"

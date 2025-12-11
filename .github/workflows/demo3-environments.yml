@@ -1,0 +1,169 @@
+name: Demo 3 - Environments & Deployment Gates
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy-to-prod:
+        description: 'Deploy to production?'
+        required: false
+        type: boolean
+        default: false
+  push:
+    paths:
+      - 'demos/demo3-environments/**'
+      - '.github/workflows/demo3-environments.yml'
+
+jobs:
+  # Build job - no environment needed
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        working-directory: demos/demo3-environments
+        run: npm install
+      
+      - name: Build
+        working-directory: demos/demo3-environments
+        run: npm run build
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-build
+          path: demos/demo3-environments/dist/
+
+  # Deploy to Development (automatic, no approval)
+  deploy-dev:
+    name: Deploy to Development
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: https://dev.example.com
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: app-build
+          path: ./dist
+      
+      - name: Deploy to Dev
+        run: |
+          echo "Deploying to Development environment..."
+          echo "Environment: ${{ vars.ENVIRONMENT_NAME }}"
+          echo "API Endpoint: ${{ vars.API_URL }}"
+          echo "Using secret token: ${{ secrets.DEPLOY_TOKEN && '***configured***' || '***not configured***' }}"
+          ls -la ./dist
+          echo "✓ Deployment to Development completed!"
+
+  # Deploy to Staging (with approval gate)
+  deploy-staging:
+    name: Deploy to Staging
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.example.com
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: app-build
+          path: ./dist
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests before deployment..."
+          sleep 2
+          echo "✓ Smoke tests passed!"
+      
+      - name: Deploy to Staging
+        run: |
+          echo "Deploying to Staging environment..."
+          echo "Environment: ${{ vars.ENVIRONMENT_NAME }}"
+          echo "API Endpoint: ${{ vars.API_URL }}"
+          echo "Using secret token: ${{ secrets.DEPLOY_TOKEN && '***configured***' || '***not configured***' }}"
+          ls -la ./dist
+          echo "✓ Deployment to Staging completed!"
+      
+      - name: Run integration tests
+        run: |
+          echo "Running integration tests..."
+          sleep 2
+          echo "✓ Integration tests passed!"
+
+  # Deploy to Production (requires approval and flag)
+  deploy-production:
+    name: Deploy to Production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.event.inputs.deploy-to-prod == 'true' || github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://example.com
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: app-build
+          path: ./dist
+      
+      - name: Pre-deployment checks
+        run: |
+          echo "Running pre-deployment checks..."
+          echo "Checking database migrations..."
+          echo "Checking API compatibility..."
+          echo "✓ All checks passed!"
+      
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to Production environment..."
+          echo "Environment: ${{ vars.ENVIRONMENT_NAME }}"
+          echo "API Endpoint: ${{ vars.API_URL }}"
+          echo "Using secret token: ${{ secrets.DEPLOY_TOKEN && '***configured***' || '***not configured***' }}"
+          ls -la ./dist
+          echo "✓ Deployment to Production completed!"
+      
+      - name: Post-deployment verification
+        run: |
+          echo "Verifying production deployment..."
+          echo "Health check: OK"
+          echo "Monitoring: Active"
+          echo "✓ Production deployment verified!"
+      
+      - name: Notify team
+        if: always()
+        run: |
+          echo "Sending notification to team..."
+          echo "Deployment status: ${{ job.status }}"
+          echo "Deployed by: ${{ github.actor }}"
+          echo "✓ Notification sent!"
+
+  # Summary job
+  deployment-summary:
+    name: Deployment Summary
+    needs: [deploy-dev, deploy-staging, deploy-production]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Display deployment status
+        run: |
+          echo "=== Deployment Summary ==="
+          echo "Development: ${{ needs.deploy-dev.result }}"
+          echo "Staging: ${{ needs.deploy-staging.result }}"
+          echo "Production: ${{ needs.deploy-production.result }}"
+          echo "=========================="

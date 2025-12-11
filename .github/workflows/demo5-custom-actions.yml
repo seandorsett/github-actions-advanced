@@ -1,0 +1,184 @@
+name: Demo 5 - Custom Actions & GitHub Packages
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'demos/demo5-custom-actions/**'
+      - '.github/workflows/demo5-custom-actions.yml'
+      - '.github/actions/**'
+
+jobs:
+  # Demonstrate JavaScript action
+  javascript-action:
+    name: JavaScript Action Demo
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Use custom JavaScript action
+        id: js-action
+        uses: ./.github/actions/greet-user
+        with:
+          who-to-greet: 'GitHub Actions Audience'
+          greeting-style: 'enthusiastic'
+      
+      - name: Display output
+        run: |
+          echo "Greeting: ${{ steps.js-action.outputs.greeting }}"
+          echo "Time: ${{ steps.js-action.outputs.time }}"
+
+  # Demonstrate Docker action
+  docker-action:
+    name: Docker Action Demo
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Use custom Docker action
+        id: docker-action
+        uses: ./.github/actions/code-analyzer
+        with:
+          path: 'demos/demo5-custom-actions'
+          language: 'javascript'
+      
+      - name: Display analysis results
+        run: |
+          echo "Files analyzed: ${{ steps.docker-action.outputs.files-count }}"
+          echo "Lines of code: ${{ steps.docker-action.outputs.lines-count }}"
+          echo "Issues found: ${{ steps.docker-action.outputs.issues-count }}"
+
+  # Demonstrate action with all action types
+  composite-advanced:
+    name: Advanced Composite Action
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Full CI pipeline action
+        uses: ./.github/actions/ci-pipeline
+        with:
+          node-version: '18'
+          working-directory: 'demos/demo5-custom-actions'
+          run-tests: 'true'
+          deploy: 'false'
+
+  # Build and publish package (simulated)
+  build-package:
+    name: Build & Publish Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://npm.pkg.github.com'
+      
+      - name: Build package
+        working-directory: demos/demo5-custom-actions/my-package
+        run: |
+          echo "Building package..."
+          npm install
+          npm run build
+          echo "✓ Package built successfully!"
+      
+      - name: Publish to GitHub Packages (dry-run)
+        working-directory: demos/demo5-custom-actions/my-package
+        run: |
+          echo "Would publish to GitHub Packages..."
+          echo "Package: @${{ github.repository_owner }}/my-awesome-package"
+          echo "Version: 1.0.0"
+          echo "Registry: https://npm.pkg.github.com"
+          echo ""
+          echo "To actually publish, run: npm publish"
+          echo "(Skipping actual publish in demo)"
+
+  # Consume package from another workflow
+  use-package:
+    name: Use Published Package
+    needs: build-package
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Simulate package usage
+        run: |
+          echo "Installing package from GitHub Packages..."
+          echo "npm install @${{ github.repository_owner }}/my-awesome-package"
+          echo ""
+          echo "Using package in application:"
+          cd demos/demo5-custom-actions/consumer-app
+          npm install
+          npm start
+
+  # Demonstrate action marketplace concepts
+  action-marketplace:
+    name: Action Marketplace Concepts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Show popular marketplace actions
+        run: |
+          echo "=== Popular GitHub Actions from Marketplace ==="
+          echo ""
+          echo "1. actions/checkout@v4 - Checkout repository"
+          echo "2. actions/setup-node@v4 - Setup Node.js"
+          echo "3. actions/upload-artifact@v3 - Upload artifacts"
+          echo "4. docker/build-push-action@v5 - Build/push Docker"
+          echo "5. aws-actions/configure-aws-credentials@v4 - AWS setup"
+          echo ""
+          echo "Custom actions can be published to marketplace!"
+          echo "Benefits:"
+          echo "  - Reusable across repositories"
+          echo "  - Versioned with tags"
+          echo "  - Community contributions"
+          echo "  - Better than Jenkins plugins (no installation)"
+
+  # Summary
+  summary:
+    name: Demo Summary
+    needs: [javascript-action, docker-action, composite-advanced, build-package, use-package, action-marketplace]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Display summary
+        run: |
+          echo "=== Demo 5 Summary ==="
+          echo ""
+          echo "✓ JavaScript Action: ${{ needs.javascript-action.result }}"
+          echo "✓ Docker Action: ${{ needs.docker-action.result }}"
+          echo "✓ Composite Action: ${{ needs.composite-advanced.result }}"
+          echo "✓ Package Build: ${{ needs.build-package.result }}"
+          echo "✓ Package Usage: ${{ needs.use-package.result }}"
+          echo "✓ Marketplace Concepts: ${{ needs.action-marketplace.result }}"
+          echo ""
+          echo "=== Key Takeaways ==="
+          echo "1. Three action types: JavaScript, Docker, Composite"
+          echo "2. GitHub Packages for artifact distribution"
+          echo "3. Action Marketplace for sharing"
+          echo "4. Better than Jenkins plugins - no installation"
+          echo "5. Versioned with Git tags for stability"

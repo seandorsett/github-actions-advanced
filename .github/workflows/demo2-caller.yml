@@ -1,0 +1,71 @@
+name: Demo 2 - Reusable Workflows & Composite Actions
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'demos/demo2-reusable-workflows/**'
+      - '.github/workflows/demo2-*.yml'
+
+jobs:
+  # Call reusable workflow for dev environment
+  dev-workflow:
+    name: Deploy to Dev
+    uses: ./.github/workflows/demo2-reusable-workflow.yml
+    with:
+      environment: development
+      node-version: '18'
+      run-tests: true
+
+  # Call reusable workflow for staging environment
+  staging-workflow:
+    name: Deploy to Staging
+    needs: dev-workflow
+    uses: ./.github/workflows/demo2-reusable-workflow.yml
+    with:
+      environment: staging
+      node-version: '18'
+      run-tests: true
+
+  # Call reusable workflow for production environment
+  production-workflow:
+    name: Deploy to Production
+    needs: staging-workflow
+    uses: ./.github/workflows/demo2-reusable-workflow.yml
+    with:
+      environment: production
+      node-version: '20'
+      run-tests: false
+
+  # Demonstrate composite action
+  use-composite-action:
+    name: Use Composite Action
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Use custom composite action
+        uses: ./.github/actions/setup-and-lint
+        with:
+          node-version: '18'
+          working-directory: 'demos/demo2-reusable-workflows'
+      
+      - name: Show results
+        run: echo "Composite action completed successfully!"
+
+  # Display all outputs
+  summary:
+    name: Display Summary
+    needs: [dev-workflow, staging-workflow, production-workflow, use-composite-action]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Display outputs
+        run: |
+          echo "Dev Build Status: ${{ needs.dev-workflow.outputs.build-status }}"
+          echo "Dev Test Results: ${{ needs.dev-workflow.outputs.test-results }}"
+          echo "Staging Build Status: ${{ needs.staging-workflow.outputs.build-status }}"
+          echo "Production Build Status: ${{ needs.production-workflow.outputs.build-status }}"

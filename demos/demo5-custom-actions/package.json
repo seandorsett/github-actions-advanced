@@ -1,0 +1,12 @@
+{
+  "name": "demo5-custom-actions",
+  "version": "1.0.0",
+  "description": "Demo showing custom actions and GitHub Packages",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node test.js",
+    "lint": "echo 'Linting...' && echo 'No issues found'"
+  },
+  "keywords": ["github-actions", "custom-actions", "packages"],
+  "license": "MIT"
+}

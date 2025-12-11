@@ -1,0 +1,185 @@
+name: Demo 4 - Dynamic Job Generation
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'demos/demo4-dynamic-jobs/**'
+      - '.github/workflows/demo4-dynamic-jobs.yml'
+
+jobs:
+  # Generate dynamic matrix from file
+  generate-matrix:
+    name: Generate Test Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      services: ${{ steps.set-services.outputs.services }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Read configuration and generate matrix
+        id: set-matrix
+        run: |
+          # Read test configuration from JSON file
+          MATRIX=$(cat demos/demo4-dynamic-jobs/test-config.json | jq -c '.tests')
+          echo "Generated matrix: $MATRIX"
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+      
+      - name: Generate service list
+        id: set-services
+        run: |
+          # Generate list of services to test
+          SERVICES=$(cat demos/demo4-dynamic-jobs/services.json | jq -c '.services')
+          echo "Generated services: $SERVICES"
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+
+  # Dynamic tests based on generated matrix
+  dynamic-tests:
+    name: Test ${{ matrix.name }}
+    needs: generate-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup environment
+        run: |
+          echo "Testing: ${{ matrix.name }}"
+          echo "OS: ${{ matrix.os }}"
+          echo "Runtime: ${{ matrix.runtime }}"
+          echo "Version: ${{ matrix.version }}"
+      
+      - name: Setup Node.js
+        if: matrix.runtime == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.version }}
+      
+      - name: Setup Python
+        if: matrix.runtime == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.version }}
+      
+      - name: Run test suite
+        working-directory: demos/demo4-dynamic-jobs
+        run: |
+          echo "Running ${{ matrix.name }}..."
+          node test-runner.js "${{ matrix.name }}" "${{ matrix.runtime }}" "${{ matrix.version }}"
+
+  # Dynamic service deployment
+  deploy-services:
+    name: Deploy ${{ matrix.service.name }}
+    needs: [generate-matrix, dynamic-tests]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.generate-matrix.outputs.services) }}
+      max-parallel: 3
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy service
+        run: |
+          echo "Deploying service: ${{ matrix.service.name }}"
+          echo "Port: ${{ matrix.service.port }}"
+          echo "Replicas: ${{ matrix.service.replicas }}"
+          echo "Environment: ${{ matrix.service.environment }}"
+          sleep 2
+          echo "✓ ${{ matrix.service.name }} deployed successfully!"
+
+  # Conditional job based on changed files
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      docs: ${{ steps.filter.outputs.docs }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - name: Check for changes
+        id: filter
+        run: |
+          # Simulate change detection (in real scenario, use actions/github-script or git diff)
+          echo "backend=true" >> $GITHUB_OUTPUT
+          echo "frontend=false" >> $GITHUB_OUTPUT
+          echo "docs=false" >> $GITHUB_OUTPUT
+
+  # Conditional backend job
+  build-backend:
+    name: Build Backend
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Build backend
+        run: |
+          echo "Building backend services..."
+          echo "Backend changes detected, running full build"
+
+  # Conditional frontend job
+  build-frontend:
+    name: Build Frontend
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Build frontend
+        run: |
+          echo "Building frontend application..."
+          echo "Frontend changes detected, running full build"
+
+  # Fan-out/Fan-in pattern
+  parallel-tasks:
+    name: Parallel Task ${{ matrix.task }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        task: [1, 2, 3, 4, 5]
+    
+    steps:
+      - name: Execute task
+        run: |
+          echo "Running parallel task ${{ matrix.task }}..."
+          sleep $((RANDOM % 5 + 1))
+          echo "✓ Task ${{ matrix.task }} completed!"
+
+  # Aggregate results (fan-in)
+  aggregate-results:
+    name: Aggregate Results
+    needs: [dynamic-tests, deploy-services, parallel-tasks]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Display summary
+        run: |
+          echo "=== Workflow Summary ==="
+          echo "Dynamic Tests: ${{ needs.dynamic-tests.result }}"
+          echo "Service Deployments: ${{ needs.deploy-services.result }}"
+          echo "Parallel Tasks: ${{ needs.parallel-tasks.result }}"
+          echo "======================="

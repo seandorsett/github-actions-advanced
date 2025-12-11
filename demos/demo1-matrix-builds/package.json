@@ -1,0 +1,10 @@
+{
+  "name": "demo1-matrix-builds",
+  "version": "1.0.0",
+  "description": "Demo showing matrix builds in GitHub Actions",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": ["github-actions", "matrix", "testing"],
+  "license": "MIT"
+}

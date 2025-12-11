@@ -1,0 +1,28 @@
+name: 'Code Analyzer'
+description: 'A custom Docker action that analyzes code'
+author: 'Demo Author'
+
+inputs:
+  path:
+    description: 'Path to analyze'
+    required: true
+    default: '.'
+  language:
+    description: 'Programming language'
+    required: false
+    default: 'javascript'
+
+outputs:
+  files-count:
+    description: 'Number of files analyzed'
+  lines-count:
+    description: 'Total lines of code'
+  issues-count:
+    description: 'Number of issues found'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.path }}
+    - ${{ inputs.language }}

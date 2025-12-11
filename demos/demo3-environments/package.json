@@ -1,0 +1,11 @@
+{
+  "name": "demo3-environments",
+  "version": "1.0.0",
+  "description": "Demo showing environment-based deployments with secrets and gates",
+  "scripts": {
+    "build": "node build.js",
+    "deploy": "node deploy.js"
+  },
+  "keywords": ["github-actions", "environments", "deployments"],
+  "license": "MIT"
+}
