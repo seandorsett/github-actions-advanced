@@ -7,6 +7,9 @@ on:
       - 'demos/demo1-matrix-builds/**'
       - '.github/workflows/demo1-matrix-builds.yml'
 
+permissions:
+  contents: read
+
 jobs:
   # Simple matrix example
   test-matrix:

@@ -7,6 +7,9 @@ on:
       - 'demos/demo4-dynamic-jobs/**'
       - '.github/workflows/demo4-dynamic-jobs.yml'
 
+permissions:
+  contents: read
+
 jobs:
   # Generate dynamic matrix from file
   generate-matrix:

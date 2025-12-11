@@ -8,6 +8,9 @@ on:
       - '.github/workflows/demo5-custom-actions.yml'
       - '.github/actions/**'
 
+permissions:
+  contents: read
+
 jobs:
   # Demonstrate JavaScript action
   javascript-action:

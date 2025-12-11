@@ -13,6 +13,9 @@ on:
       - 'demos/demo3-environments/**'
       - '.github/workflows/demo3-environments.yml'
 
+permissions:
+  contents: read
+
 jobs:
   # Build job - no environment needed
   build:

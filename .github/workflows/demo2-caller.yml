@@ -7,6 +7,9 @@ on:
       - 'demos/demo2-reusable-workflows/**'
       - '.github/workflows/demo2-*.yml'
 
+permissions:
+  contents: read
+
 jobs:
   # Call reusable workflow for dev environment
   dev-workflow:
