@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Actions Advanced Features</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/black.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/monokai.css">
+    <style>
+        .reveal h1, .reveal h2, .reveal h3 {
+            text-transform: none;
+        }
+        .reveal pre {
+            width: 100%;
+            font-size: 0.5em;
+        }
+        .reveal code {
+            padding: 2px 5px;
+        }
+        .reveal .slides section {
+            text-align: left;
+        }
+        .reveal .slides section.center {
+            text-align: center;
+        }
+        .key-message {
+            background-color: #1e90ff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .comparison div {
+            padding: 10px;
+        }
+        .jenkins {
+            background-color: #2d2d2d;
+            border-left: 5px solid #d24939;
+        }
+        .github-actions {
+            background-color: #2d2d2d;
+            border-left: 5px solid #2088ff;
+        }
+        .takeaway {
+            background-color: #4caf50;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+        ul {
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Title Slide -->
+            <section class="center">
+                <h1>GitHub Actions</h1>
+                <h2>Advanced Features</h2>
+                <p>For Jenkins Users</p>
+                <p><small>Total Time: 55 minutes (50 min demos + 5 min Q&A)</small></p>
+                <aside class="notes">
+                    Welcome everyone! Today we're going to explore advanced GitHub Actions features, specifically designed for those of you with Jenkins experience.
+                    
+                    This presentation is 55 minutes total: 50 minutes of live demos and 5 minutes for Q&A at the end.
+                    
+                    The goal today is to show you that GitHub Actions can meet your CI/CD needs with simpler configuration and better developer experience.
+                </aside>
+            </section>
+
+            <!-- Introduction -->
+            <section>
+                <h2>Introduction</h2>
+                <ul>
+                    <li>Brief overview of GitHub Actions</li>
+                    <li>Why GitHub Actions matters for Jenkins users</li>
+                    <li>What makes GitHub Actions "advanced"</li>
+                </ul>
+                <aside class="notes">
+                    GitHub Actions is GitHub's built-in CI/CD platform that lets you automate workflows directly in your repository.
+                    
+                    For Jenkins users, the biggest differences you'll notice are:
+                    - Configuration is YAML instead of Groovy
+                    - Everything is version-controlled with your code
+                    - No plugins to install or maintain
+                    - Native support for modern patterns like matrix builds and reusable workflows
+                    
+                    Today we're covering "advanced" features - these are the capabilities that make GitHub Actions powerful for enterprise teams moving from Jenkins.
+                </aside>
+            </section>
+
+            <!-- Demo Structure -->
+            <section>
+                <h2>Today's Demo Flow</h2>
+                <p>Each demo follows this pattern:</p>
+                <ol>
+                    <li><strong>Problem Statement</strong> (1 min): What challenge are we solving?</li>
+                    <li><strong>Jenkins Approach</strong> (2 min): How would you do this in Jenkins?</li>
+                    <li><strong>GitHub Actions Demo</strong> (5 min): Live demonstration</li>
+                    <li><strong>Key Advantages</strong> (2 min): Why GitHub Actions is better</li>
+                </ol>
+                <aside class="notes">
+                    We'll cover 5 demos today. Each follows the same pattern so you can easily compare GitHub Actions to what you already know in Jenkins.
+                    
+                    First, we'll identify the problem or use case. Then we'll briefly discuss how you'd solve it in Jenkins. Next comes a live demo of the GitHub Actions solution. Finally, we'll discuss why the GitHub Actions approach is better.
+                    
+                    Feel free to ask quick questions during demos, but let's save detailed discussions for Q&A at the end.
+                </aside>
+            </section>
+
+            <!-- Demo 1: Matrix Builds -->
+            <section>
+                <section>
+                    <h2>Demo 1: Matrix Builds</h2>
+                    <div class="key-message">
+                        "Test across multiple environments without complex configuration"
+                    </div>
+                    <ul>
+                        <li>Jenkins requires Matrix Project Plugin or complex parallel stages</li>
+                        <li>GitHub Actions has built-in matrix strategy</li>
+                        <li>Automatic parallelization</li>
+                        <li>Include/exclude for flexibility</li>
+                        <li>Fail-fast control</li>
+                    </ul>
+                    <aside class="notes">
+                        Matrix builds let you test your code across multiple operating systems, runtime versions, or configurations simultaneously.
+                        
+                        In Jenkins, you need the Matrix Project Plugin or complex Groovy scripting with parallel stages. This often becomes hard to maintain.
+                        
+                        GitHub Actions has matrix builds as a first-class feature. You define your matrix in simple YAML, and it automatically creates parallel jobs.
+                        
+                        You can use include/exclude to add specific combinations or skip certain ones. Fail-fast control lets you decide if all jobs should stop when one fails.
+                        
+                        Let me show you a live example.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Demo Steps</h3>
+                    <ol>
+                        <li>Show <code>demo1-matrix-builds.yml</code> workflow</li>
+                        <li>Trigger workflow manually</li>
+                        <li>Show 9 parallel jobs (3 OS × 3 Node versions)</li>
+                        <li>Point out include/exclude examples</li>
+                        <li>Show final aggregation step</li>
+                    </ol>
+                    <aside class="notes">
+                        Let's walk through the actual workflow file. Notice how clean the YAML is - we define 3 operating systems and 3 Node versions, and GitHub Actions automatically creates 9 jobs.
+                        
+                        Now I'll trigger this workflow manually so you can see it in action. Watch as GitHub Actions spins up 9 parallel runners.
+                        
+                        See how we can include special combinations or exclude specific ones? This gives you fine control without complexity.
+                        
+                        After all matrix jobs complete, we have an aggregation step that collects results. This is useful for summary reports.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Jenkins vs GitHub Actions</h3>
+                    <div class="comparison">
+                        <div class="jenkins">
+                            <h4>Jenkins: Complex Groovy</h4>
+                            <pre><code class="language-groovy">matrix {
+    axes {
+        axis { 
+            name 'OS'
+            values 'ubuntu', 'windows', 'macos' 
+        }
+        axis { 
+            name 'NODE'
+            values '16', '18', '20' 
+        }
+    }
+}</code></pre>
+                        </div>
+                        <div class="github-actions">
+                            <h4>GitHub Actions: Simple YAML</h4>
+                            <pre><code class="language-yaml">strategy:
+  matrix:
+    os: [ubuntu-latest, macos-latest, windows-latest]
+    node: [16, 18, 20]</code></pre>
+                        </div>
+                    </div>
+                    <div class="takeaway">
+                        Matrix builds are first-class citizens in GitHub Actions
+                    </div>
+                    <aside class="notes">
+                        Compare these two approaches side by side. On the left is Jenkins Groovy syntax - you need to understand Groovy, define axes objects, and manage complexity.
+                        
+                        On the right is GitHub Actions - simple YAML arrays. Anyone who can read YAML can understand this. No Groovy expertise required.
+                        
+                        Key takeaway: Matrix builds are first-class citizens in GitHub Actions. They're not an afterthought or a plugin - they're built into the core platform.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Demo 2: Reusable Workflows -->
+            <section>
+                <section>
+                    <h2>Demo 2: Reusable Workflows</h2>
+                    <div class="key-message">
+                        "DRY principle without Groovy - share workflows like Git repos"
+                    </div>
+                    <ul>
+                        <li>Jenkins Shared Libraries require Groovy expertise</li>
+                        <li>GitHub Actions uses simple YAML</li>
+                        <li>Reusable workflows = entire pipelines</li>
+                        <li>Composite actions = bundled steps</li>
+                        <li>No infrastructure setup required</li>
+                    </ul>
+                    <aside class="notes">
+                        The DRY principle - Don't Repeat Yourself - is crucial for maintainable CI/CD. You want to define your build process once and reuse it everywhere.
+                        
+                        In Jenkins, you use Shared Libraries. These require Groovy expertise, a separate Git repository, and special infrastructure setup. They're powerful but complex.
+                        
+                        GitHub Actions offers two reusability mechanisms: Reusable workflows let you share entire pipelines. Composite actions let you bundle related steps.
+                        
+                        Best part? No infrastructure setup needed. Just reference the workflow by path or repo URL.
+                        
+                        Let me show you both in action.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Demo Steps</h3>
+                    <ol>
+                        <li>Show reusable workflow (<code>demo2-reusable-workflow.yml</code>)</li>
+                        <li>Show caller workflow using it 3 times (dev/staging/prod)</li>
+                        <li>Show composite action (<code>setup-and-lint</code>)</li>
+                        <li>Trigger workflow and observe sequential deployments</li>
+                        <li>Point out inputs/outputs and type safety</li>
+                    </ol>
+                    <aside class="notes">
+                        First, look at this reusable workflow. It's a complete deployment pipeline that accepts inputs like environment and run-tests flag.
+                        
+                        Now see the caller workflow. It uses the reusable workflow three times - once for dev, staging, and production. Same code, different parameters.
+                        
+                        Here's a composite action that bundles setup and linting steps. Any workflow can use this without duplicating code.
+                        
+                        Let's trigger this and watch it deploy to three environments sequentially. Notice how clean the workflow runs view is.
+                        
+                        GitHub Actions provides type safety for inputs - you can specify strings, booleans, numbers, and even required vs optional parameters.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Jenkins vs GitHub Actions</h3>
+                    <div class="comparison">
+                        <div class="jenkins">
+                            <h4>Jenkins: Shared Library Setup</h4>
+                            <pre><code class="language-groovy">@Library('my-shared-library') _
+buildAndTest(
+    environment: 'dev',
+    runTests: true
+)</code></pre>
+                        </div>
+                        <div class="github-actions">
+                            <h4>GitHub Actions: Reference by Path</h4>
+                            <pre><code class="language-yaml">jobs:
+  deploy:
+    uses: ./.github/workflows/reusable.yml
+    with:
+      environment: dev
+      run-tests: true</code></pre>
+                        </div>
+                    </div>
+                    <div class="takeaway">
+                        Reusability without the complexity of Shared Libraries
+                    </div>
+                    <aside class="notes">
+                        Again, let's compare. Jenkins requires you to set up a Shared Library, load it with a special annotation, and call Groovy functions.
+                        
+                        GitHub Actions? Just reference the workflow file path. No setup, no installation, no Groovy.
+                        
+                        You can even reference workflows from other repositories using the repository path instead of a local path.
+                        
+                        Key takeaway: You get all the reusability benefits of Jenkins Shared Libraries without any of the complexity.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Demo 3: Environments -->
+            <section>
+                <section>
+                    <h2>Demo 3: Environments & Deployment Gates</h2>
+                    <div class="key-message">
+                        "Built-in environment management and approval gates"
+                    </div>
+                    <ul>
+                        <li>Jenkins needs plugins for environment management</li>
+                        <li>GitHub Actions has native environment support</li>
+                        <li>Secrets scoped to environments</li>
+                        <li>Approval gates in UI settings (no code!)</li>
+                        <li>Deployment history tracking</li>
+                        <li>Branch protection for environments</li>
+                    </ul>
+                    <aside class="notes">
+                        Managing environments - dev, staging, production - is critical for safe deployments.
+                        
+                        Jenkins requires plugins and custom code for environment management, approval gates, and deployment tracking.
+                        
+                        GitHub Actions has all of this built-in. You create environments in the UI, configure protection rules, and scope secrets to specific environments.
+                        
+                        Approval gates don't require code - you configure them in the GitHub UI. You can require specific reviewers, add wait timers, and restrict which branches can deploy to which environments.
+                        
+                        Let's see this in action.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Demo Steps</h3>
+                    <ol>
+                        <li>Show environment configuration in GitHub Settings</li>
+                        <li>Show workflow with 3 environments</li>
+                        <li>Trigger deployment</li>
+                        <li>Dev auto-deploys → Staging auto-deploys → Production waits</li>
+                        <li>Show manual approval (if configured)</li>
+                        <li>Review deployment history in Environments tab</li>
+                    </ol>
+                    <aside class="notes">
+                        First, let me show you the environment configuration in GitHub repository settings. See how we can add protection rules, required reviewers, and wait timers all from the UI?
+                        
+                        Now look at the workflow. It references three environments: development, staging, and production. The workflow itself is simple YAML.
+                        
+                        Let's trigger a deployment. Watch as dev deploys automatically, then staging, and production waits for approval.
+                        
+                        If I've configured manual approval for production, I'll get a notification and can approve or reject right here.
+                        
+                        The Environments tab shows complete deployment history - who deployed what, when, to which environment, and the results.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Jenkins vs GitHub Actions</h3>
+                    <div class="comparison">
+                        <div class="jenkins">
+                            <h4>Jenkins: Input Step for Approval</h4>
+                            <pre><code class="language-groovy">stage('Deploy to Production') {
+    input { 
+        message "Deploy?" 
+    }
+    steps { 
+        sh 'deploy.sh' 
+    }
+}</code></pre>
+                        </div>
+                        <div class="github-actions">
+                            <h4>GitHub Actions: UI-based Protection</h4>
+                            <pre><code class="language-yaml">environment:
+  name: production
+  url: https://example.com
+# Protected in settings</code></pre>
+                        </div>
+                    </div>
+                    <div class="takeaway">
+                        Environment management without plugins or complex code
+                    </div>
+                    <aside class="notes">
+                        Jenkins requires you to code approval logic into your pipeline. The input step blocks and waits, but managing who can approve requires additional configuration.
+                        
+                        GitHub Actions separates concerns. The workflow declares which environment it's deploying to. The protection rules are configured in the UI by repository admins.
+                        
+                        This is better because: developers write workflows without worrying about approval logic, and administrators control protection rules without touching code.
+                        
+                        Key takeaway: Environment management is a first-class feature, not a plugin or code pattern.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Demo 4: Dynamic Jobs -->
+            <section>
+                <section>
+                    <h2>Demo 4: Dynamic Job Generation</h2>
+                    <div class="key-message">
+                        "Generate jobs from configuration files at runtime"
+                    </div>
+                    <ul>
+                        <li>Jenkins requires complex scripted pipelines</li>
+                        <li>GitHub Actions uses <code>fromJson()</code> function</li>
+                        <li>Configuration-driven workflows</li>
+                        <li>Change detection for optimization</li>
+                        <li>Fan-out/fan-in patterns</li>
+                        <li>Self-service CI/CD (teams edit JSON)</li>
+                    </ul>
+                    <aside class="notes">
+                        Sometimes you need to generate jobs dynamically based on configuration files. For example, testing multiple microservices or running tests from a test plan.
+                        
+                        In Jenkins, this requires complex scripted pipelines with Groovy loops and dynamic stage generation.
+                        
+                        GitHub Actions has a fromJson function that converts JSON strings into matrices. This enables true runtime job generation.
+                        
+                        You can combine this with change detection to only test what changed, implement fan-out/fan-in patterns, or enable self-service CI/CD where teams maintain JSON config files.
+                        
+                        Let me demonstrate.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Demo Steps</h3>
+                    <ol>
+                        <li>Show <code>test-config.json</code> and <code>services.json</code></li>
+                        <li>Show matrix generation job</li>
+                        <li>Trigger workflow</li>
+                        <li>Watch dynamic jobs spawn from configuration</li>
+                        <li>Show conditional jobs based on changes</li>
+                        <li>Demonstrate parallel task execution</li>
+                    </ol>
+                    <aside class="notes">
+                        Here are our configuration files - one defines test suites, another defines microservices. Teams can edit these without touching workflow code.
+                        
+                        The workflow has a matrix generation job that reads these JSON files and outputs a matrix specification.
+                        
+                        Let's trigger it. Watch as GitHub Actions reads the config and spawns jobs dynamically. The number of jobs depends on the config file content.
+                        
+                        We can make this even smarter with change detection - only test services that changed in the pull request.
+                        
+                        See how all these jobs run in parallel? This is the fan-out pattern. We could add a fan-in job to aggregate results.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Jenkins vs GitHub Actions</h3>
+                    <div class="comparison">
+                        <div class="jenkins">
+                            <h4>Jenkins: Complex Groovy Loops</h4>
+                            <pre><code class="language-groovy">def config = readJSON file: 'config.json'
+config.tests.each { test ->
+    stage("Test ${test.name}") {
+        // Must know stages at parse time
+    }
+}</code></pre>
+                        </div>
+                        <div class="github-actions">
+                            <h4>GitHub Actions: Runtime Generation</h4>
+                            <pre><code class="language-yaml">strategy:
+  matrix:
+    include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}</code></pre>
+                        </div>
+                    </div>
+                    <div class="takeaway">
+                        True dynamic job generation without Groovy scripting
+                    </div>
+                    <aside class="notes">
+                        Jenkins can read JSON and loop, but it must know all stages at pipeline parse time. This limits what you can do dynamically.
+                        
+                        GitHub Actions generates the matrix at runtime. One job outputs JSON, and subsequent jobs use fromJson to create a matrix from that JSON.
+                        
+                        This is truly dynamic - the jobs don't exist until runtime. You can compute what to run based on any logic you want.
+                        
+                        Key takeaway: Real dynamic job generation without needing to be a Groovy expert.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Demo 5: Custom Actions -->
+            <section>
+                <section>
+                    <h2>Demo 5: Custom Actions & GitHub Packages</h2>
+                    <div class="key-message">
+                        "Extensibility without installation - actions are Git repos"
+                    </div>
+                    <ul>
+                        <li>Jenkins plugins require admin installation</li>
+                        <li>GitHub Actions = reference Git repositories</li>
+                        <li>Three action types: JavaScript, Docker, Composite</li>
+                        <li>GitHub Packages = built-in artifact registry</li>
+                        <li>GitHub Marketplace vs Jenkins Update Center</li>
+                        <li>Version pinning with Git tags</li>
+                    </ul>
+                    <aside class="notes">
+                        Extensibility is crucial. You need to add capabilities beyond what's built-in.
+                        
+                        Jenkins uses plugins. Installing a plugin requires admin access, often a restart, and ongoing maintenance for updates.
+                        
+                        GitHub Actions treats actions as Git repositories. Want to use an action? Reference it in your YAML. No installation, no admin, no restart.
+                        
+                        You have three action types: JavaScript for speed, Docker for any language, and Composite to bundle existing actions.
+                        
+                        GitHub Packages provides artifact registry. The Marketplace has 20,000+ actions versus Jenkins Update Center.
+                        
+                        Version pinning uses Git tags - you control exactly which version you use.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Demo Steps</h3>
+                    <ol>
+                        <li>Show JavaScript action (<code>greet-user</code>)</li>
+                        <li>Show Docker action (<code>code-analyzer</code>)</li>
+                        <li>Show composite action (<code>ci-pipeline</code>)</li>
+                        <li>Trigger workflow and observe all three types</li>
+                        <li>Show package build and publish (simulated)</li>
+                        <li>Discuss marketplace publishing</li>
+                    </ol>
+                    <aside class="notes">
+                        Let's look at a JavaScript action. It's fast, has direct API access, and is written in TypeScript. The action.yml file describes inputs and outputs.
+                        
+                        Here's a Docker action. You can use any language - Python, Go, Ruby. GitHub Actions builds and runs the container for you.
+                        
+                        This composite action bundles multiple steps. No code required - just YAML that orchestrates other actions and shell commands.
+                        
+                        Let's trigger a workflow that uses all three. See how seamlessly they work together?
+                        
+                        GitHub Packages lets you publish Docker images, npm packages, and more. All integrated with your repository and Actions.
+                        
+                        Publishing to the Marketplace makes your action discoverable by all GitHub users.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Action Types Overview</h3>
+                    <div style="font-size: 0.8em;">
+                        <div style="margin: 20px 0;">
+                            <strong>JavaScript Actions</strong>
+                            <ul>
+                                <li>Fast execution</li>
+                                <li>Lightweight</li>
+                                <li>Direct GitHub API access</li>
+                            </ul>
+                        </div>
+                        <div style="margin: 20px 0;">
+                            <strong>Docker Actions</strong>
+                            <ul>
+                                <li>Any language support</li>
+                                <li>Isolated environment</li>
+                                <li>Consistent across runners</li>
+                            </ul>
+                        </div>
+                        <div style="margin: 20px 0;">
+                            <strong>Composite Actions</strong>
+                            <ul>
+                                <li>Bundle existing actions</li>
+                                <li>No code required</li>
+                                <li>Easy to create and maintain</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <aside class="notes">
+                        Let me summarize the three action types:
+                        
+                        JavaScript actions are the fastest. They run directly on the runner, have direct access to the GitHub API, and are perfect for simple automation tasks.
+                        
+                        Docker actions let you use any language. They run in an isolated container, which makes them consistent across different runner environments. Great for complex tools.
+                        
+                        Composite actions are the easiest to create. You just bundle existing actions and shell commands in YAML. No programming required. Perfect for standardizing common workflows across your organization.
+                        
+                        Choose based on your needs: speed, language flexibility, or ease of creation.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Jenkins vs GitHub Actions</h3>
+                    <div class="comparison">
+                        <div class="jenkins">
+                            <h4>Jenkins: Plugin Installation Required</h4>
+                            <p>Must install plugin via UI</p>
+                            <ul style="font-size: 0.8em;">
+                                <li>Requires restart</li>
+                                <li>Admin access needed</li>
+                                <li>Ongoing maintenance</li>
+                            </ul>
+                        </div>
+                        <div class="github-actions">
+                            <h4>GitHub Actions: Reference in YAML</h4>
+                            <pre><code class="language-yaml">- uses: username/action-name@v1.0.0
+- uses: ./.github/actions/custom-action</code></pre>
+                        </div>
+                    </div>
+                    <div class="takeaway">
+                        Actions are just Git repos - no installation, no admin, no restart
+                    </div>
+                    <aside class="notes">
+                        The fundamental difference: Jenkins plugins are installed infrastructure. GitHub Actions are referenced code.
+                        
+                        With Jenkins, you need admin access to install plugins, often restart Jenkins, and maintain plugin versions across all Jenkins instances.
+                        
+                        With GitHub Actions, any developer can use any action by simply referencing it. Public actions from the Marketplace or private actions from your organization.
+                        
+                        This democratizes extensibility. Developers don't need to wait for admins. They can experiment, test, and adopt new actions immediately.
+                        
+                        Key takeaway: Actions are just Git repositories. Everything you know about Git applies - versioning, forking, pull requests, code review.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Q&A Section -->
+            <section>
+                <section>
+                    <h2>Q&A</h2>
+                    <p>Time for your questions!</p>
+                    <aside class="notes">
+                        Great! We've covered all five demos. Now let's take questions.
+                        
+                        I've anticipated some common questions, but please ask whatever's on your mind about GitHub Actions, migration from Jenkins, or anything else we've covered.
+                        
+                        We have 5 minutes for Q&A, so let's make them count!
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Common Questions: Migration</h3>
+                    <p><strong>Q: How do we migrate from Jenkins?</strong></p>
+                    <ul>
+                        <li>Start with new projects on GitHub Actions</li>
+                        <li>Gradually migrate existing pipelines</li>
+                        <li>Can run both in parallel during transition</li>
+                        <li>Many workflow patterns are similar</li>
+                    </ul>
+                    <aside class="notes">
+                        Migration doesn't have to be all-or-nothing. I recommend starting with new projects on GitHub Actions to build team expertise.
+                        
+                        Then gradually migrate existing pipelines, starting with simpler ones. You can run Jenkins and GitHub Actions in parallel during the transition.
+                        
+                        Many patterns translate directly - stages become jobs, agents become runners, and so on. The syntax is different but the concepts are familiar.
+                        
+                        GitHub also provides an Actions Importer tool that can automatically convert Jenkins pipelines to GitHub Actions workflows.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Common Questions: Cost</h3>
+                    <p><strong>Q: What about cost?</strong></p>
+                    <ul>
+                        <li>Free for public repositories</li>
+                        <li>Generous free tier for private repos</li>
+                        <li>Self-hosted runners for unlimited builds</li>
+                        <li>Usually cheaper than maintaining Jenkins infrastructure</li>
+                    </ul>
+                    <aside class="notes">
+                        GitHub Actions is free for public repositories with unlimited minutes.
+                        
+                        For private repositories, you get a generous free tier - 2,000 minutes per month for free accounts, 3,000 for Pro, and 50,000 for Enterprise.
+                        
+                        Need more? Use self-hosted runners for unlimited builds at no additional cost. These work just like Jenkins agents.
+                        
+                        Many organizations find GitHub Actions cheaper than maintaining Jenkins infrastructure - no servers to maintain, no plugins to update, lower operational overhead.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Common Questions: Self-hosted Runners</h3>
+                    <p><strong>Q: Can we use self-hosted runners?</strong></p>
+                    <ul>
+                        <li>Yes! GitHub Actions supports self-hosted runners</li>
+                        <li>Similar to Jenkins agents</li>
+                        <li>Can run on-premises or in private cloud</li>
+                        <li>Access to internal resources</li>
+                    </ul>
+                    <aside class="notes">
+                        Absolutely! Self-hosted runners are fully supported and work similarly to Jenkins agents.
+                        
+                        You can run them on-premises, in your private cloud, or anywhere you need. They can access internal resources like databases, deployment targets, or private registries.
+                        
+                        Self-hosted runners can be dedicated to a single repository or shared across an organization. You can also create runner groups with different access levels.
+                        
+                        Many organizations use GitHub-hosted runners for most workloads and self-hosted runners for specific needs like compliance, custom hardware, or internal resource access.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Common Questions: Plugins</h3>
+                    <p><strong>Q: What about plugins we depend on?</strong></p>
+                    <ul>
+                        <li>Most Jenkins plugins have GitHub Actions equivalents</li>
+                        <li>Marketplace has 20,000+ actions</li>
+                        <li>Can create custom actions</li>
+                        <li>Better: Actions don't need installation</li>
+                    </ul>
+                    <aside class="notes">
+                        Most Jenkins plugins have equivalent GitHub Actions. The Marketplace has over 20,000 actions covering most common use cases.
+                        
+                        Can't find what you need? Create a custom action. As we saw in Demo 5, this is straightforward with JavaScript, Docker, or Composite actions.
+                        
+                        The key difference: actions don't need installation. If a plugin exists, you can use it immediately by referencing it in your workflow.
+                        
+                        During migration planning, list your critical Jenkins plugins and research their GitHub Actions equivalents. You'll find most are covered.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Common Questions: Security</h3>
+                    <p><strong>Q: Security concerns?</strong></p>
+                    <ul>
+                        <li>Secrets management built-in</li>
+                        <li>Environment-scoped secrets</li>
+                        <li>OIDC for cloud authentication</li>
+                        <li>Audit logs included</li>
+                        <li>Third-party action pinning by SHA</li>
+                    </ul>
+                    <aside class="notes">
+                        Security is built into GitHub Actions from the ground up.
+                        
+                        Secrets management is native - store secrets at repository or organization level, scope them to specific environments, and they're automatically masked in logs.
+                        
+                        OpenID Connect enables passwordless authentication to cloud providers like AWS, Azure, and GCP.
+                        
+                        Audit logs track all workflow runs, approvals, and secret access. This is included with GitHub Enterprise.
+                        
+                        For third-party actions, you can pin by SHA instead of tags to ensure the exact code you reviewed is what runs. This prevents supply chain attacks.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Common Questions: Learning Curve</h3>
+                    <p><strong>Q: Learning curve for the team?</strong></p>
+                    <ul>
+                        <li>YAML is simpler than Groovy</li>
+                        <li>Better documentation</li>
+                        <li>Active community</li>
+                        <li>GitHub Copilot can help write workflows</li>
+                    </ul>
+                    <aside class="notes">
+                        Most teams find GitHub Actions easier to learn than Jenkins.
+                        
+                        YAML is simpler and more approachable than Groovy. You don't need programming expertise to write workflows.
+                        
+                        GitHub's documentation is excellent, with comprehensive guides and examples. The community is very active with lots of blog posts and tutorials.
+                        
+                        Here's a cool tip: GitHub Copilot can help you write workflows. Describe what you want in a comment, and Copilot suggests the workflow code.
+                        
+                        Most teams become productive within a week or two, especially those with existing CI/CD experience from Jenkins.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Key Messages -->
+            <section>
+                <h2>Key Messages</h2>
+                <ol>
+                    <li><strong>Simplicity</strong>: YAML is easier than Groovy</li>
+                    <li><strong>Built-in Features</strong>: No plugins to install/maintain</li>
+                    <li><strong>Version Control</strong>: Workflows live with code</li>
+                    <li><strong>Developer Experience</strong>: Faster, cleaner, more intuitive</li>
+                    <li><strong>Cost Effective</strong>: Cheaper than Jenkins infrastructure</li>
+                    <li><strong>Modern</strong>: Designed for cloud-native workflows</li>
+                </ol>
+                <aside class="notes">
+                    Let me leave you with six key messages to remember:
+                    
+                    1. Simplicity - YAML is more approachable than Groovy. This democratizes CI/CD across your team.
+                    
+                    2. Built-in features - Everything we showed today works out of the box. No plugins to install, maintain, or update.
+                    
+                    3. Version control - Workflows live with your code. Branches have their own workflows. Pull requests can update CI/CD alongside code.
+                    
+                    4. Developer experience - GitHub Actions is faster and more intuitive. Developers spend less time fighting CI/CD and more time shipping features.
+                    
+                    5. Cost effectiveness - Lower operational overhead and often lower compute costs than maintaining Jenkins infrastructure.
+                    
+                    6. Modern design - Built for cloud-native workflows, containerized applications, and modern development practices.
+                </aside>
+            </section>
+
+            <!-- Closing -->
+            <section class="center">
+                <h2>Closing</h2>
+                <div class="key-message">
+                    "GitHub Actions brings enterprise CI/CD capabilities with the simplicity of configuration files. Everything we showed today works out of the box - no plugins, no Groovy, no complex setup. Just commit your workflow and you're running."
+                </div>
+                <aside class="notes">
+                    To close, let me emphasize this:
+                    
+                    GitHub Actions brings enterprise-grade CI/CD capabilities with the simplicity of configuration files.
+                    
+                    Everything we demonstrated today works out of the box. No plugins to install. No Groovy to learn. No complex infrastructure setup.
+                    
+                    Just commit your workflow YAML file to your repository, and you're running CI/CD.
+                    
+                    This is the future of CI/CD - simple, powerful, and integrated with your development workflow.
+                </aside>
+            </section>
+
+            <!-- Resources -->
+            <section>
+                <h2>Resources</h2>
+                <ul>
+                    <li>This repository: All demo code</li>
+                    <li><a href="https://docs.github.com/actions">GitHub Actions Documentation</a></li>
+                    <li><a href="https://docs.github.com/actions/migrating-to-github-actions/migrating-from-jenkins-to-github-actions">Migration Guide from Jenkins</a></li>
+                    <li><a href="https://github.com/marketplace?type=actions">GitHub Marketplace</a></li>
+                    <li>Each demo's README with detailed explanations</li>
+                </ul>
+                <aside class="notes">
+                    Before you go, here are resources to help you get started:
+                    
+                    This repository contains all the demo code we showed today. Feel free to clone it and experiment.
+                    
+                    The GitHub Actions documentation is comprehensive and well-organized.
+                    
+                    There's a specific migration guide for moving from Jenkins to GitHub Actions.
+                    
+                    The GitHub Marketplace lets you discover the 20,000+ available actions.
+                    
+                    Each demo folder has a detailed README explaining the concepts and showing variations.
+                    
+                    I'm also available for follow-up questions. Thank you for your time today!
+                </aside>
+            </section>
+
+            <!-- Thank You -->
+            <section class="center">
+                <h1>Thank You!</h1>
+                <p>Questions? Let's chat!</p>
+                <p style="margin-top: 50px;">🚀</p>
+                <aside class="notes">
+                    Thank you all for attending! I hope this gave you a clear picture of what GitHub Actions can do and how it compares to Jenkins.
+                    
+                    Remember, migration doesn't have to happen overnight. Start small, build confidence, and gradually move more workloads to GitHub Actions.
+                    
+                    I'm happy to answer follow-up questions anytime. Let's revolutionize your CI/CD together!
+                    
+                    Good luck with your GitHub Actions journey!
+                </aside>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            showSlideNumber: 'speaker',
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            plugins: [ RevealNotes, RevealHighlight ],
+            width: 1280,
+            height: 720,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 2.0
+        });
+    </script>
+</body>
+</html>
