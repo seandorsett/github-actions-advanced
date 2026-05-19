@@ -59,6 +59,20 @@
         ul {
             font-size: 0.9em;
         }
+        @media (max-width: 900px) {
+            .comparison {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .key-message,
+            .takeaway {
+                padding: 12px;
+                font-size: 1em;
+            }
+            .reveal pre {
+                font-size: 0.45em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -837,8 +851,6 @@ config.tests.each { test ->
             transition: 'slide',
             backgroundTransition: 'fade',
             plugins: [ RevealNotes, RevealHighlight ],
-            width: 1280,
-            height: 720,
             margin: 0.1,
             minScale: 0.2,
             maxScale: 2.0
